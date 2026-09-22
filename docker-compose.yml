@@ -1,0 +1,54 @@
+name: gestion-projets
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: gp-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test_db
+    volumes:
+      - mysql-data:/var/lib/mysql          # volume persistant
+    networks:
+      - gp-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    image: ${DOCKERHUB_USER:-local}/gestion-projets-backend:${TAG:-latest}
+    container_name: gp-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/test_db?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    ports:
+      - "8089:8080"                        # 8080 est déjà pris par Jenkins
+    depends_on:
+      mysql:
+        condition: service_healthy         # démarre après la BD
+    networks:
+      - gp-network
+    restart: on-failure
+
+  frontend:
+    build: ./frontend
+    image: ${DOCKERHUB_USER:-local}/gestion-projets-frontend:${TAG:-latest}
+    container_name: gp-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend                            # démarre après le backend
+    networks:
+      - gp-network
+
+networks:
+  gp-network:                              # réseau dédié
+    driver: bridge
+
+volumes:
+  mysql-data:
