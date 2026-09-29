@@ -30,7 +30,7 @@ pipeline {
                           -Dsonar.projectKey=gestion-projets-backend \
                           -Dsonar.projectName=gestion-projets-backend \
                           -Dsonar.host.url=http://sonarqube:9000 \
-                          -Dsonar.token=$SONAR_AUTH_TOKEN
+                          -Dsonar.login=$SONAR_AUTH_TOKEN
                     '''
                 }
             }
