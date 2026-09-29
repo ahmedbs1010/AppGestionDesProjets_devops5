@@ -16,10 +16,14 @@ pipeline {
             }
         }
 
-        stage('Tests') {
+              stage('Tests') {
             steps {
                 sh '''
                   docker run --rm \
+                    --network gestion-projets_gp-network \
+                    -e SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/test_db \
+                    -e SPRING_DATASOURCE_USERNAME=root \
+                    -e SPRING_DATASOURCE_PASSWORD=root \
                     -v "$WORKSPACE/backend":/app \
                     -v sonar_m2:/root/.m2 \
                     -w /app \
@@ -28,7 +32,6 @@ pipeline {
                 '''
             }
         }
-
         stage('Analyse SonarQube') {
             steps {
                 withSonarQubeEnv('sonar') {
