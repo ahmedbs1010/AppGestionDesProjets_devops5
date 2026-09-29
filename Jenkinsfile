@@ -16,6 +16,26 @@ pipeline {
             }
         }
 
+        stage('Analyse SonarQube') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh '''
+                      docker run --rm \
+                        --network gestion-projets_gp-network \
+                        -v "$WORKSPACE/backend":/app \
+                        -v sonar_m2:/root/.m2 \
+                        -w /app \
+                        maven:3.9-eclipse-temurin-17 \
+                        mvn -B clean package -DskipTests sonar:sonar \
+                          -Dsonar.projectKey=gestion-projets-backend \
+                          -Dsonar.projectName=gestion-projets-backend \
+                          -Dsonar.host.url=http://sonarqube:9000 \
+                          -Dsonar.token=$SONAR_AUTH_TOKEN
+                    '''
+                }
+            }
+        } 
+
         stage('Création des images') {
             steps {
                 sh 'docker compose build'
