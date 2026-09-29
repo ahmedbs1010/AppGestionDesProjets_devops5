@@ -26,7 +26,7 @@ pipeline {
                         -v sonar_m2:/root/.m2 \
                         -w /app \
                         maven:3.9-eclipse-temurin-17 \
-                        mvn -B clean package -DskipTests sonar:sonar \
+                        mvn -B clean package -DskipTests org.sonarsource.scanner.maven:sonar-maven-plugin:3.11.0.3922:sonar \
                           -Dsonar.projectKey=gestion-projets-backend \
                           -Dsonar.projectName=gestion-projets-backend \
                           -Dsonar.host.url=http://sonarqube:9000 \
