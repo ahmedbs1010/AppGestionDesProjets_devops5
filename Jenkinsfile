@@ -16,6 +16,19 @@ pipeline {
             }
         }
 
+        stage('Tests') {
+            steps {
+                sh '''
+                  docker run --rm \
+                    -v "$WORKSPACE/backend":/app \
+                    -v sonar_m2:/root/.m2 \
+                    -w /app \
+                    maven:3.9-eclipse-temurin-17 \
+                    mvn -B test
+                '''
+            }
+        }
+
         stage('Analyse SonarQube') {
             steps {
                 withSonarQubeEnv('sonar') {
@@ -36,6 +49,13 @@ pipeline {
             }
         } 
 
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
         stage('Création des images') {
             steps {
                 sh 'docker compose build'
